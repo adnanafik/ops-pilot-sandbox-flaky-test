@@ -1,3 +1,4 @@
+```
 """Stripe webhook handler with idempotency key enforcement.
 
 After the refactor in this commit, idempotency keys are stored in a
@@ -27,19 +28,21 @@ class WebhookResult:
     body: dict
 
 
-def handle_stripe_webhook(payload: dict) -> WebhookResult:
+def handle_stripe_webhook(payload: dict, store: dict[str, datetime] | None = None) -> WebhookResult:
     """Process a Stripe webhook event with idempotency enforcement.
 
     Returns 200 on first delivery, 409 on duplicate (correct production
-    behaviour). The integration test breaks because it doesn't reset
-    _idempotency_store between the two POST calls.
+    behaviour). An injectable store can be provided for testability.
     """
+    if store is None:
+        store = _idempotency_store
+
     event_id = payload.get("id")
     if not event_id:
         return WebhookResult(status_code=400, body={"error": "missing event id"})
 
-    if event_id in _idempotency_store:
-        processed_at = _idempotency_store[event_id]
+    if event_id in store:
+        processed_at = store[event_id]
         return WebhookResult(
             status_code=409,
             body={
@@ -49,8 +52,9 @@ def handle_stripe_webhook(payload: dict) -> WebhookResult:
             },
         )
 
-    _idempotency_store[event_id] = datetime.utcnow()
+    store[event_id] = datetime.utcnow()
     return WebhookResult(
         status_code=200,
         body={"status": "processed", "event_id": event_id},
     )
+```
