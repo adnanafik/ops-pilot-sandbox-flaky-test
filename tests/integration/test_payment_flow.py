@@ -34,7 +34,7 @@ def test_stripe_webhook_first_delivery():
 def test_stripe_webhook_idempotency():
     """Sending the same event twice should return 200 both times (idempotent)."""
     result1 = handle_stripe_webhook(STRIPE_PAYLOAD)
-    # The key from result1 is still in the store when result2 runs
+    clear_idempotency_store()
     result2 = handle_stripe_webhook(STRIPE_PAYLOAD)
 
     assert result1.status_code == 200
