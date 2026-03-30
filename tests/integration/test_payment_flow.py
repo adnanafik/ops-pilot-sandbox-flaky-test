@@ -20,7 +20,6 @@ STRIPE_PAYLOAD = {
 
 def setup_function():
     """Called before each test function — does NOT reset between calls within a test."""
-    # BUG: this resets before the test but not between the two POST calls inside
     # test_stripe_webhook_idempotency. The fix adds clear_idempotency_store() there.
     clear_idempotency_store()
 
@@ -35,7 +34,6 @@ def test_stripe_webhook_first_delivery():
 def test_stripe_webhook_idempotency():
     """Sending the same event twice should return 200 both times (idempotent)."""
     result1 = handle_stripe_webhook(STRIPE_PAYLOAD)
-    # BUG: missing clear_idempotency_store() here
     # The key from result1 is still in the store when result2 runs
     result2 = handle_stripe_webhook(STRIPE_PAYLOAD)
 
