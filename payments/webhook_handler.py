@@ -1,3 +1,4 @@
+```
 """Stripe webhook handler with idempotency key enforcement.
 
 After the refactor in this commit, idempotency keys are stored in a
@@ -54,3 +55,4 @@ def handle_stripe_webhook(payload: dict) -> WebhookResult:
         status_code=200,
         body={"status": "processed", "event_id": event_id},
     )
+```
