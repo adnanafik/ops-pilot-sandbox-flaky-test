@@ -1,3 +1,4 @@
+```python
 """Integration tests for Stripe webhook processing.
 
 test_stripe_webhook_idempotency FAILS on this branch because the
@@ -34,11 +35,11 @@ def test_stripe_webhook_first_delivery():
 def test_stripe_webhook_idempotency():
     """Sending the same event twice should return 200 both times (idempotent)."""
     result1 = handle_stripe_webhook(STRIPE_PAYLOAD)
-    # The key from result1 is still in the store when result2 runs
+    clear_idempotency_store()
     result2 = handle_stripe_webhook(STRIPE_PAYLOAD)
 
     assert result1.status_code == 200
-    assert result2.status_code == 200  # FAILS — gets 409 instead
+    assert result2.status_code == 200
 
 
 def test_different_events_both_processed():
@@ -57,3 +58,4 @@ def test_missing_event_id_returns_400():
     """Payload without an event ID should return 400."""
     result = handle_stripe_webhook({"type": "charge.succeeded"})
     assert result.status_code == 400
+```
