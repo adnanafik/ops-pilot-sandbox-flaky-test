@@ -12,7 +12,6 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 # Simulates Postgres idempotency_keys table — persists across requests
-# BUG: previously this was a local dict inside the handler (request-scoped)
 _idempotency_store: dict[str, datetime] = {}
 
 
@@ -40,7 +39,7 @@ def handle_stripe_webhook(payload: dict) -> WebhookResult:
     if event_id in _idempotency_store:
         return WebhookResult(
             status_code=200,
-            body={"status": "processed", "event_id": event_id},
+            body={"status": "already_processed", "event_id": event_id},
         )
 
     _idempotency_store[event_id] = datetime.utcnow()
